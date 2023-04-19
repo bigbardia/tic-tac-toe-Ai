@@ -2,11 +2,20 @@
 #include <vector>
 #include <utility>
 
+struct Board {
+    std::vector<std::vector<char>> grid;
+};
 
 
-void DrawBoard(std::vector<std::vector<char>> board) {
-    int rows = board.size();
-    int cols = board[0].size();
+struct boardScore {
+    Board board;
+    int score;
+};
+
+void DrawBoard(Board board) {
+
+    int rows = board.grid.size();
+    int cols = board.grid[0].size();
 
     for (int i = 0; i < rows * 2 + 2; i ++) {
         for (int j = 0; j < cols * 2 + 2; j ++) {
@@ -32,7 +41,7 @@ void DrawBoard(std::vector<std::vector<char>> board) {
                     std::cout << i/2-1;
                 }
                 else {
-                    std::cout << board[i/2-1][j/2-1];
+                    std::cout << board.grid[i/2-1][j/2-1];
                 }
             }
         }
@@ -40,9 +49,9 @@ void DrawBoard(std::vector<std::vector<char>> board) {
     }
 }
 
-char BoardState(std::vector<std::vector<char>> board,int win_count) {
-    int rows = board.size();
-    int cols = board[0].size();
+char BoardState(Board board,int win_count) {
+    int rows = board.grid.size();
+    int cols = board.grid[0].size();
     std::string target_x ="";
     std::string target_o = "";
     for (int i = 0; i < win_count ; i ++) {
@@ -52,7 +61,7 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
     for (int i = 0; i < rows;i ++ ) {
         std::string row = "";
         for (int j = 0; j <cols; j ++) {
-            row += board[i][j];
+            row += board.grid[i][j];
         }
         if (row.find(target_x)!=std::string::npos){
             return 'x';
@@ -64,7 +73,7 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
     for (int j = 0; j < cols; j ++) {
         std::string col = "";
         for (int i = 0; i < rows;i ++) {
-            col += board[i][j];
+            col += board.grid[i][j];
         }
         if (col.find(target_x)!=std::string::npos) {
             return 'x';
@@ -84,7 +93,7 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
         int j = 0;
         int ti = i;
         while (ti > -1 && j < cols) {
-            diag1 += board[ti][j];
+            diag1 += board.grid[ti][j];
             ti--;
             j ++;
         }
@@ -92,7 +101,7 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
         ti = i;
         j = cols-1;
         while (ti>-1&&j>-1) {
-            diag2 += board[ti][j];
+            diag2 += board.grid[ti][j];
             ti--;
             j--;
         }
@@ -100,14 +109,14 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
         ti = i;
         j = 0;
         while (ti<rows&&j<cols){
-            diag3 += board[ti][j];
+            diag3 += board.grid[ti][j];
             ti++;
             j++;
         }
         ti = i;
         j =0;
         while (ti<rows&&j>-1) {
-            diag4+=board[ti][j];
+            diag4+=board.grid[ti][j];
             ti ++;
             j --;
         }
@@ -123,7 +132,7 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
 
     for (int i = 0; i < rows;i ++ ){
         for (int j = 0; j < cols; j ++ ){
-            if (board[i][j] == ' ') {
+            if (board.grid[i][j] == ' ') {
                 return 'p';
             }
         }
@@ -134,7 +143,7 @@ char BoardState(std::vector<std::vector<char>> board,int win_count) {
 }
 
 
-std::pair<std::vector<std::vector<char>>,int> minimax(std::vector<std::vector<char>> board, int depth , int win_count , char player ,char turn ,int DEPTH) {
+boardScore minimax(Board board, int depth , int win_count , char player ,char turn ,int DEPTH) {
     
     char board_state = BoardState(board,win_count);
 
@@ -153,36 +162,36 @@ std::pair<std::vector<std::vector<char>>,int> minimax(std::vector<std::vector<ch
         else {
             value=0;
         }
-        std::pair< std::vector<std::vector<char>>, int> result;
-        result.first = board;
-        result.second = value;
+        boardScore result;
+        result.board = board;
+        result.score = value;
 
         return result;
     }
     
     
-    std::vector<std::vector<std::vector<char>>> moves;
+    std::vector<Board> moves;
     std::vector<int> scores;
-    for (int i = 0; i < board.size(); i ++ ) {
-        for (int j = 0; j < board[0].size(); j ++) {
-            if (board[i][j] == ' ') {
-                std::pair<std::vector<std::vector<char>>,int> ans;
+    for (int i = 0; i < board.grid.size(); i ++ ) {
+        for (int j = 0; j < board.grid[0].size(); j ++) {
+            if (board.grid[i][j] == ' ') {
+                boardScore ans;
                 if (turn == 'x') {
-                    board[i][j] = 'x';
+                    board.grid[i][j] = 'x';
                     ans = minimax(board,depth-1,win_count,player,'o',DEPTH);
-                    board[i][j] = ' ';
+                    board.grid[i][j] = ' ';
                 }
                 if (turn == 'o') {
-                    board[i][j] = 'o';
+                    board.grid[i][j] = 'o';
                     ans = minimax(board,depth-1,win_count,player,'x',DEPTH);
-                    board[i][j] = ' ';
+                    board.grid[i][j] = ' ';
                 }
-                moves.push_back(ans.first);
-                scores.push_back(ans.second);
+                moves.push_back(ans.board);
+                scores.push_back(ans.score);
             }
         }
     }
-    std::pair<std::vector<std::vector<char>>,int> RESULT;
+    boardScore RESULT;
     if (turn == player) {
         int maximum = -2;
         int index;
@@ -194,12 +203,12 @@ std::pair<std::vector<std::vector<char>>,int> minimax(std::vector<std::vector<ch
         }
 
         if (depth == DEPTH) {
-            RESULT.first = moves[index];
-            RESULT.second = scores[index];
+            RESULT.board = moves[index];
+            RESULT.score = scores[index];
         }
         else {
-            RESULT.first = board;
-            RESULT.second = scores[index];
+            RESULT.board = board;
+            RESULT.score = scores[index];
         }
 
         return RESULT;
@@ -214,11 +223,11 @@ std::pair<std::vector<std::vector<char>>,int> minimax(std::vector<std::vector<ch
         }
     }
     if (depth == DEPTH){
-        RESULT.first = moves[index];
-        RESULT.second = scores[index];
+        RESULT.board = moves[index];
+        RESULT.score = scores[index];
     }else{
-        RESULT.first = board;
-        RESULT.second = scores[index];
+        RESULT.board = board;
+        RESULT.score = scores[index];
     }
     return RESULT;    
 }
@@ -234,14 +243,14 @@ int main() {
     std::cin >> rows >> cols >> win_count;
     std::cout << std::endl;
 
-    std::vector<std::vector<char>> BOARD;
+    Board BOARD;
 
     for (int i = 0; i < rows; i ++) {
         std::vector<char> row;
         for (int j = 0; j < cols; j ++) {
             row.push_back(' ');
         }
-        BOARD.push_back(row);
+        BOARD.grid.push_back(row);
     }
     char player;
     std::cout << "do you want to be x or o? [x,o] :";
@@ -271,14 +280,13 @@ int main() {
             std::cout << "enter row number and col number [row col] : ";
             std::cin >> i >> j;
             std::cout << std::endl;
-            BOARD[i][j] = turn;
+            BOARD.grid[i][j] = turn;
             
         }
 
         if (turn != player) {
-            std::pair<std::vector<std::vector<char>> , int> move;
-            move = minimax(BOARD,9,win_count,turn,turn,9);
-            BOARD=move.first;
+            boardScore move = minimax(BOARD,9,win_count,turn,turn,9);
+            BOARD = move.board;
         }
         if (turn =='o') turn = 'x';
         else if (turn == 'x') turn = 'o';
